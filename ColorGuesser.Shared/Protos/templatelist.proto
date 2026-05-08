@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package templatelist.v1;
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "ColorGuesser.Shared";
+
+service TemplateListService {
+  rpc Add(Item) returns (Item);
+  rpc Remove(RemoveRequest) returns (google.protobuf.Empty);
+  rpc GetAll(google.protobuf.Empty) returns (GetAllResponse);
+}
+
+message Item {
+  string key = 1;
+  string value = 2;
+}
+
+message RemoveRequest {
+  string key = 1;
+}
+
+message GetAllResponse {
+  repeated Item items = 1;
+}
