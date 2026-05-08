@@ -1,12 +1,13 @@
 using ColorGuesser.Shared;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using System.Collections.Concurrent;
 
 namespace ColorGuesser.Server.Services;
 
 public class TemplateListServiceImpl : TemplateListService.TemplateListServiceBase
 {
-    private static readonly Dictionary<string, string> _items = new();
+    private static readonly ConcurrentDictionary<string, string> _items = new();
 
     public override Task<Item> Add(Item request, ServerCallContext context)
     {
@@ -16,7 +17,7 @@ public class TemplateListServiceImpl : TemplateListService.TemplateListServiceBa
 
     public override Task<Empty> Remove(RemoveRequest request, ServerCallContext context)
     {
-        _items.Remove(request.Key);
+        _items.TryRemove(request.Key, out _);
         return Task.FromResult(new Empty());
     }
 

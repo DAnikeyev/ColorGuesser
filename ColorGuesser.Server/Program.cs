@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddGrpc();
 
+// Note: In production, restrict AllowAnyOrigin to specific trusted origins.
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
