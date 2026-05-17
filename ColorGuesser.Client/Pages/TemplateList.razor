@@ -1,0 +1,128 @@
+@page "/templatelist"
+@using ColorGuesser.Shared
+@using Google.Protobuf.WellKnownTypes
+@inject TemplateListService.TemplateListServiceClient TemplateListClient
+
+<PageTitle>Template List</PageTitle>
+
+<h1>Template List</h1>
+
+<div class="mb-3 row g-2 align-items-center">
+    <div class="col-auto">
+        <input class="form-control" placeholder="Key" @bind="newKey" />
+    </div>
+    <div class="col-auto">
+        <input class="form-control" placeholder="Value" @bind="newValue" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" @onclick="AddItem" disabled="@isBusy">Add</button>
+    </div>
+</div>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (items is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (items.Count == 0)
+{
+    <p>No items. Add one above.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Key</td>
+                    <td>@item.Value</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveItem(item.Key)" disabled="@isBusy">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Item>? items;
+    private string newKey = string.Empty;
+    private string newValue = string.Empty;
+    private bool isBusy;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItems();
+    }
+
+    private async Task LoadItems()
+    {
+        try
+        {
+            errorMessage = null;
+            var response = await TemplateListClient.GetAllAsync(new Empty());
+            items = response.Items.ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load items: {ex.Message}";
+        }
+    }
+
+    private async Task AddItem()
+    {
+        if (string.IsNullOrWhiteSpace(newKey))
+            return;
+
+        isBusy = true;
+        try
+        {
+            errorMessage = null;
+            await TemplateListClient.AddAsync(new Item { Key = newKey, Value = newValue });
+            newKey = string.Empty;
+            newValue = string.Empty;
+            await LoadItems();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to add item: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task RemoveItem(string key)
+    {
+        isBusy = true;
+        try
+        {
+            errorMessage = null;
+            await TemplateListClient.RemoveAsync(new RemoveRequest { Key = key });
+            await LoadItems();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to remove item: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}

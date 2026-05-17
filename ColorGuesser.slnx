@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ColorGuesser.Client/ColorGuesser.Client.csproj" />
+  <Project Path="ColorGuesser.Server/ColorGuesser.Server.csproj" />
+  <Project Path="ColorGuesser.Shared/ColorGuesser.Shared.csproj" />
+</Solution>
